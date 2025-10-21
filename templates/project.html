@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - Half-Bakery{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{{ url_for('index') }}">← Back to all projects</a>
+</div>
+
+<article class="project-detail">
+    <h2>{{ project.title }}</h2>
+    <div class="project-meta">
+        By <strong>{{ project.author_name }}</strong> on {{ project.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+    </div>
+    <div class="project-description">
+        {{ description }}
+    </div>
+</article>
+
+<section class="comments-section">
+    <h3>Discussion ({{ comments|length }} comment{% if comments|length != 1 %}s{% endif %})</h3>
+
+    {% if comments %}
+        <div class="comments-list">
+            {% for comment in comments %}
+                <div class="comment" id="comment-{{ comment.id }}">
+                    <div class="comment-header">
+                        <strong>{{ comment.student_name }}</strong>
+                        <span class="comment-date">{{ comment.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                    </div>
+
+                    {% if comment.parent_comment_id %}
+                        <div class="quoted-text">
+                            <div class="quote-label">In reply to {{ comment.parent.student_name }}:</div>
+                            <div class="quote-content">{{ comment.quoted_text }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="comment-body">
+                        {{ comment.comment_text }}
+                    </div>
+
+                    <div class="comment-actions">
+                        <button class="btn-link reply-btn"
+                                data-comment-id="{{ comment.id }}"
+                                data-author="{{ comment.student_name }}"
+                                data-text="{{ comment.comment_text }}">
+                            Reply
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="no-content">No comments yet. Be the first to comment!</p>
+    {% endif %}
+
+    <div class="comment-form-section" id="comment-form-section">
+        <h4>Add a Comment</h4>
+
+        <div id="reply-preview" class="reply-preview" style="display: none;">
+            <div class="quote-label">Replying to <span id="reply-author"></span>:</div>
+            <div class="quote-content" id="reply-quote"></div>
+            <button type="button" class="btn-link" id="clear-reply">Clear reply</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('add_comment', project_id=project.id) }}" class="form">
+            {{ form.hidden_tag() }}
+            {{ form.parent_comment_id() }}
+
+            <div class="form-group">
+                {{ form.student_name.label }}
+                {{ form.student_name(class="form-control") }}
+            </div>
+
+            <div class="form-group" style="display: none;">
+                {{ form.quoted_text.label }}
+                {{ form.quoted_text(class="form-control", rows="3") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.comment_text.label }}
+                {{ form.comment_text(class="form-control", rows="5") }}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const replyButtons = document.querySelectorAll('.reply-btn');
+    const parentCommentIdField = document.getElementById('parent_comment_id');
+    const quotedTextField = document.getElementById('quoted_text');
+    const replyPreview = document.getElementById('reply-preview');
+    const replyAuthor = document.getElementById('reply-author');
+    const replyQuote = document.getElementById('reply-quote');
+    const clearReplyBtn = document.getElementById('clear-reply');
+    const commentFormSection = document.getElementById('comment-form-section');
+
+    replyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            const author = this.dataset.author;
+            const text = this.dataset.text;
+
+            parentCommentIdField.value = commentId;
+            quotedTextField.value = text;
+            replyAuthor.textContent = author;
+            replyQuote.textContent = text;
+            replyPreview.style.display = 'block';
+
+            commentFormSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    clearReplyBtn.addEventListener('click', function() {
+        parentCommentIdField.value = '';
+        quotedTextField.value = '';
+        replyPreview.style.display = 'none';
+    });
+});
+</script>
+{% endblock %}

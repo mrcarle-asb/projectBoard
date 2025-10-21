@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Half-Bakery - Project Ideas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>All Project Ideas</h2>
+    <a href="{{ url_for('new_project') }}" class="btn btn-primary">Post New Idea</a>
+</div>
+
+{% if projects %}
+    <div class="project-list">
+        {% for project in projects %}
+            <div class="project-item">
+                <h3><a href="{{ url_for('view_project', project_id=project.id) }}">{{ project.title }}</a></h3>
+                <div class="project-meta">
+                    By <strong>{{ project.author_name }}</strong> on {{ project.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="no-content">No projects yet. Be the first to post an idea!</p>
+{% endif %}
+{% endblock %}
