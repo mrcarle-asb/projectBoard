@@ -1,4 +1,4 @@
-# Half-Bakery Project Specification
+    # Half-Bakery Project Specification
 
 ## Overview
 A simple Flask-based project idea repository for classroom use. Students can post "half-baked" project ideas and comment on them with flat chronological threading.
